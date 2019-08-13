@@ -50,7 +50,7 @@ class NovaTab extends MergeValue implements \JsonSerializable
     {
         $this->name = $name;
         $this->hasErrorCallback = $errorCallback;
-
+        $this->panel = Panel::defaultNameForCreate(app(NovaRequest::class)->newResource());
         parent::__construct($this->prepareFields($fields, $html));
     }
 
@@ -82,7 +82,8 @@ class NovaTab extends MergeValue implements \JsonSerializable
 
         return collect(is_callable($fields) ? $fields() : $fields)
             ->each(function ($field) use ($html, $hasError) {
-                if ($field instanceof Field || $field instanceof ResourceTool) {
+	        if ($field instanceof Field || $field instanceof ResourceTool) {
+                    $field->panel = $this->panel;
                     $field->withMeta([
                         'tab' => $this->name,
                         'tabHTML' => $html,
