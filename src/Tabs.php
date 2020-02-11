@@ -78,7 +78,7 @@ trait Tabs
             $field->meta['tab'] = [
                 'name' => $name,
                 'html' => $field->meta['tabHTML'] ?? $name,
-                'error' => $field->meta['hasError']
+                'error' => array_key_exists('hasError', $field->meta) ? $field->meta['hasError'] : ''
             ];
         }
 
