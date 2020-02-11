@@ -5,6 +5,7 @@ namespace R64\NovaTab;
 use Laravel\Nova\Panel;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Fields\FieldCollection;
 
 trait Tabs
 {
@@ -62,7 +63,7 @@ trait Tabs
                 $fields = $fields->all();
             }
             $this->assignFieldsToTabs($request, $fields);
-            return collect([
+            return FieldCollection::make([
                 (NovaTabs::make('tabs'))
                     ->withMeta(['fields' => array_values($fields)])
             ]);
@@ -88,8 +89,8 @@ trait Tabs
     * Assign the fields with the given panels to their parent panel.
     *
     * @param  string                           $label
-    * @param  \Illuminate\Support\Collection   $panels
-    * @return \Illuminate\Support\Collection
+    * @param  \Laravel\Nova\Fields\FieldCollection   $fields
+    * @return \Laravel\Nova\Fields\FieldCollection
     */
     protected function assignToPanels($label, FieldCollection $fields)
     {
