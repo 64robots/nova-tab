@@ -27,7 +27,7 @@ trait Tabs
      */
     public function serializeForDetail(NovaRequest $request, \Laravel\Nova\Resource $resource)
     {
-        $detailFields = parent::serializeForDetail($request);
+        $detailFields = parent::serializeForDetail($request, $resource);
         $detailFields['fields'] = $this->availableTabs($request, $detailFields['fields']);
         return $detailFields;
     }
