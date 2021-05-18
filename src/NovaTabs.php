@@ -22,11 +22,16 @@ class NovaTabs extends Field
     */
     public function jsonSerialize()
     {
-	if (empty($this->meta()['fields'][0]->panel)) {
-            $this->panel = Panel::defaultNameForUpdate(app(NovaRequest::class)->newResource());
+        if (empty($this->meta()['fields'][0]->panel)) {
+            if ($id = app(NovaRequest::class)->resourceId) {
+                $this->panel = Panel::defaultNameForUpdate(app(NovaRequest::class)->findResourceOrFail($id));
+            } else {
+                $this->panel = Panel::defaultNameForUpdate(app(NovaRequest::class)->newResource());
+            }
         } else {
             $this->panel = $this->meta()['fields'][0]->panel;
         }
+
         return array_merge([
             'component' => $this->component(),
             'prefixComponent' => true,
@@ -39,6 +44,6 @@ class NovaTabs extends Field
             'nullable' => $this->nullable,
             'readonly' => $this->isReadonly(app(NovaRequest::class)),
             'textAlign' => $this->textAlign,
-        ], $this->meta()); 
-    }   
+        ], $this->meta());
+    }
 }
