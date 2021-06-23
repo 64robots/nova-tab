@@ -5,6 +5,7 @@ namespace R64\NovaTab;
 use Laravel\Nova\Panel;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Fields\FieldCollection;
 
 trait Tabs
 {
@@ -24,9 +25,9 @@ trait Tabs
      * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
      * @return array
      */
-    public function serializeForDetail(NovaRequest $request)
+    public function serializeForDetail(NovaRequest $request, \Laravel\Nova\Resource $resource)
     {
-        $detailFields = parent::serializeForDetail($request);
+        $detailFields = parent::serializeForDetail($request, $resource);
         $detailFields['fields'] = $this->availableTabs($request, $detailFields['fields']);
         return $detailFields;
     }
@@ -62,7 +63,7 @@ trait Tabs
                 $fields = $fields->all();
             }
             $this->assignFieldsToTabs($request, $fields);
-            return collect([
+            return FieldCollection::make([
                 (NovaTabs::make('tabs'))
                     ->withMeta(['fields' => array_values($fields)])
             ]);
@@ -73,14 +74,32 @@ trait Tabs
     protected function assignFieldsToTabs(NovaRequest $request, $fields)
     {
         foreach ($fields as $field) {
-            $name = $field->meta['tab'] ?? Panel::defaultNameFor($request->newResource());
+            $name = $field->meta['tab'] ?? Panel::defaultNameForCreate($request->newResource());
             $field->meta['tab'] = [
                 'name' => $name,
                 'html' => $field->meta['tabHTML'] ?? $name,
-                'error' => $field->meta['hasError']
+                'error' => array_key_exists('hasError', $field->meta) ? $field->meta['hasError'] : ''
             ];
         }
 
         return $fields;
+    }
+
+    /**
+    * Assign the fields with the given panels to their parent panel.
+    *
+    * @param  string                           $label
+    * @param  \Laravel\Nova\Fields\FieldCollection   $fields
+    * @return \Laravel\Nova\Fields\FieldCollection
+    */
+    protected function assignToPanels($label, FieldCollection $fields)
+    {
+        return $fields->map(function ($field) use ($label) {
+            if (! $field->panel) {
+                $field->panel = $label;
+            }
+
+            return $field;
+        });
     }
 }

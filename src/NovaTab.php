@@ -5,6 +5,8 @@ namespace R64\NovaTab;
 use Laravel\Nova\Fields\Field;
 use Laravel\Nova\ResourceTool;
 use Illuminate\Http\Resources\MergeValue;
+use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Panel;
 
 class NovaTab extends MergeValue implements \JsonSerializable
 {
@@ -49,9 +51,11 @@ class NovaTab extends MergeValue implements \JsonSerializable
     public function __construct($name, $fields = [], $html = null, $errorCallback = null)
     {
         $this->name = $name;
-        $this->hasErrorCallback = $errorCallback;
-
-        parent::__construct($this->prepareFields($fields, $html));
+	$this->hasErrorCallback = $errorCallback;
+	if (app(NovaRequest::class)->isCreateOrAttachRequest()) {
+            $this->panel = Panel::defaultNameForCreate(app(NovaRequest::class)->newResource());
+	}
+	parent::__construct($this->prepareFields($fields, $html));
     }
 
     /**
@@ -82,7 +86,8 @@ class NovaTab extends MergeValue implements \JsonSerializable
 
         return collect(is_callable($fields) ? $fields() : $fields)
             ->each(function ($field) use ($html, $hasError) {
-                if ($field instanceof Field || $field instanceof ResourceTool) {
+	        if ($field instanceof Field || $field instanceof ResourceTool) {
+                    $field->panel = $this->panel;
                     $field->withMeta([
                         'tab' => $this->name,
                         'tabHTML' => $html,
